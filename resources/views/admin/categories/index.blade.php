@@ -6,7 +6,7 @@
 <div class="page-head">
     <div>
         <h1>Kateqoriyalar</h1>
-        <p class="sub">{{ $categories->count() }} kateqoriya</p>
+        <p class="sub">{{ $total }} kateqoriya</p>
     </div>
     <a href="{{ route('admin.categories.create') }}" class="btn">+ Yeni kateqoriya</a>
 </div>
@@ -29,29 +29,10 @@
                 </thead>
                 <tbody>
                 @foreach ($categories as $category)
-                    <tr>
-                        <td>
-                            @if ($category->image)
-                                <img src="{{ Storage::disk('public')->url($category->image) }}" alt="" class="thumb">
-                            @else
-                                <div class="thumb-empty"></div>
-                            @endif
-                        </td>
-                        <td>
-                            <a href="{{ route('admin.categories.edit', $category) }}"><strong>{{ $category->tr('name', 'az') }}</strong></a>
-                            <div class="small muted">{{ $category->tr('description', 'az') }}</div>
-                        </td>
-                        <td class="num">{{ $category->products_count }}</td>
-                        <td class="num">{{ $category->sort_order }}</td>
-                        <td>@include('admin.partials.status', ['active' => $category->is_active])</td>
-                        <td class="actions">
-                            <a href="{{ route('admin.categories.edit', $category) }}" class="btn btn-ghost btn-sm">Redaktə</a>
-                            @include('admin.partials.delete', [
-                                'action'  => route('admin.categories.destroy', $category),
-                                'confirm' => 'Kateqoriya silinsin?',
-                            ])
-                        </td>
-                    </tr>
+                    @include('admin.categories.row', ['category' => $category, 'isChild' => false])
+                    @foreach ($category->children as $child)
+                        @include('admin.categories.row', ['category' => $child, 'isChild' => true])
+                    @endforeach
                 @endforeach
                 </tbody>
             </table>

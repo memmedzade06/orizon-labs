@@ -26,6 +26,27 @@
 
         <div>
             <div class="card"><div class="card-body">
+                @php $hasChildren = $isEdit && $category->children()->exists(); @endphp
+                <div class="field">
+                    <label for="f_parent_id">Üst kateqoriya</label>
+                    <select id="f_parent_id" name="parent_id" @disabled($hasChildren)
+                            class="@error('parent_id') is-invalid @enderror">
+                        <option value="">— Əsas kateqoriya —</option>
+                        @foreach ($parents as $p)
+                            <option value="{{ $p->id }}" @selected(old('parent_id', $category->parent_id) == $p->id)>{{ $p->tr('name', 'az') }}</option>
+                        @endforeach
+                    </select>
+                    <div class="help">
+                        @if ($hasChildren)
+                            Bu kateqoriyanın alt-kateqoriyaları var, ona görə o, əsas kateqoriya olaraq qalmalıdır.
+                        @else
+                            Boş qalsa — əsas kateqoriya. Üst seçilsə — onun alt-kateqoriyası olur (bir səviyyə).
+                        @endif
+                    </div>
+                    @error('parent_id') <div class="error-text">{{ $message }}</div> @enderror
+                </div>
+            </div></div>
+            <div class="card"><div class="card-body">
                 @include('admin.partials.image', ['name' => 'image', 'label' => 'Şəkil', 'current' => $category->image])
             </div></div>
             <div class="card"><div class="card-body">

@@ -86,10 +86,25 @@
             <div class="card"><div class="card-body">
                 <div class="field">
                     <label for="f_category_id">Kateqoriya <span class="req">*</span></label>
+                    @php
+                        $catSelected = old('category_id', $product->category_id);
+                        $catRoots    = $categories->whereNull('parent_id');
+                        $catChildren = $categories->whereNotNull('parent_id')->groupBy('parent_id');
+                    @endphp
                     <select id="f_category_id" name="category_id" class="@error('category_id') is-invalid @enderror">
                         <option value="">— Seçin —</option>
-                        @foreach ($categories as $c)
-                            <option value="{{ $c->id }}" @selected(old('category_id', $product->category_id) == $c->id)>{{ $c->tr('name', 'az') }}</option>
+                        @foreach ($catRoots as $root)
+                            @php $kids = $catChildren->get($root->id); @endphp
+                            @if ($kids && $kids->count())
+                                <optgroup label="{{ $root->tr('name', 'az') }}">
+                                    <option value="{{ $root->id }}" @selected($catSelected == $root->id)>{{ $root->tr('name', 'az') }} (ümumi)</option>
+                                    @foreach ($kids as $kid)
+                                        <option value="{{ $kid->id }}" @selected($catSelected == $kid->id)>{{ $kid->tr('name', 'az') }}</option>
+                                    @endforeach
+                                </optgroup>
+                            @else
+                                <option value="{{ $root->id }}" @selected($catSelected == $root->id)>{{ $root->tr('name', 'az') }}</option>
+                            @endif
                         @endforeach
                     </select>
                     @error('category_id') <div class="error-text">{{ $message }}</div> @enderror

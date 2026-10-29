@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CertificateController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\NewsController;
@@ -10,6 +11,8 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SlideController;
 use App\Http\Controllers\Admin\VideoGalleryController;
+use App\Http\Controllers\Site\HomeController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,9 +26,44 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Ana səhifə — məlumatlar admin paneldən
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+/*
+|--------------------------------------------------------------------------
+| Migrasiya linki — gizli token ilə (lokal VƏ hosting üçün işləyir)
+| Açıq:  /migrate/ba516cb8eb47a84a7d866924f10bade5
+| DİQQƏT: Hostingdə migrasiyadan sonra bu marşrutu silin və ya tokeni dəyişin —
+| daimi açıq migrasiya ünvanı saxlamaq təhlükəlidir.
+|--------------------------------------------------------------------------
+*/
+Route::get('migrate/{token}', function (string $token) {
+    abort_unless(hash_equals('ba516cb8eb47a84a7d866924f10bade5', $token), 403, 'Yanlış token.');
+
+    Artisan::call('migrate', ['--force' => true]);
+    $output = Artisan::output();
+
+    Artisan::call('optimize:clear');
+    $output .= "\n" . Artisan::output();
+
+    return response(
+        '<pre style="font:14px/1.5 monospace;padding:20px;background:#0E2A47;color:#9fe7c9;min-height:100vh;margin:0">'
+        . e($output) .
+        '</pre>'
+    );
+})->name('dev.migrate');
+
+// "Bizə yazın" forması — ictimai müraciət göndərir
+Route::post('contact', [HomeController::class, 'contact'])->name('contact.send');
+
+// Dil seçimi — seçilən dili sessiyada saxlayır və geri qayıdır
+Route::get('lang/{locale}', function (string $locale) {
+    if (in_array($locale, \App\Support\Locales::codes(), true)) {
+        session(['locale' => $locale]);
+    }
+
+    return redirect()->back();
+})->name('lang.switch');
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +94,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('slides', SlideController::class)->except('show');
         Route::resource('photos', PhotoGalleryController::class)->except('show');
         Route::resource('videos', VideoGalleryController::class)->except('show');
+        Route::resource('certificates', CertificateController::class)->except('show');
 
         // Müraciətlər (yalnız baxmaq və silmək)
         Route::resource('messages', ContactMessageController::class)->only(['index', 'show', 'destroy']);

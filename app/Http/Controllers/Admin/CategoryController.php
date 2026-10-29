@@ -16,16 +16,23 @@ class CategoryController extends AdminController
     public function index(): View
     {
         $categories = Category::query()
+            ->roots()
             ->withCount('products')
+            ->with(['children' => fn ($q) => $q->withCount('products')->ordered()])
             ->ordered()
             ->get();
 
-        return view('admin.categories.index', compact('categories'));
+        $total = Category::count();
+
+        return view('admin.categories.index', compact('categories', 'total'));
     }
 
     public function create(): View
     {
-        return view('admin.categories.form', ['category' => new Category(['is_active' => true])]);
+        return view('admin.categories.form', [
+            'category' => new Category(['is_active' => true]),
+            'parents'  => Category::roots()->ordered()->get(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -38,7 +45,10 @@ class CategoryController extends AdminController
 
     public function edit(Category $category): View
     {
-        return view('admin.categories.form', compact('category'));
+        return view('admin.categories.form', [
+            'category' => $category,
+            'parents'  => Category::roots()->where('id', '!=', $category->id)->ordered()->get(),
+        ]);
     }
 
     public function update(Request $request, Category $category): RedirectResponse
@@ -50,6 +60,10 @@ class CategoryController extends AdminController
 
     public function destroy(Category $category): RedirectResponse
     {
+        if ($category->children()->exists()) {
+            return back()->with('error', 'Bu kateqoriyanın alt-kateqoriyaları var. Əvvəlcə onları silin və ya başqa kateqoriyaya köçürün.');
+        }
+
         $count = $category->products()->count();
 
         if ($count > 0) {
@@ -73,20 +87,40 @@ class CategoryController extends AdminController
 
     private function save(Request $request, Category $category): void
     {
+        $parentRule = function (string $attribute, mixed $value, \Closure $fail) use ($category) {
+            if (!$value) {
+                return;
+            }
+            if ($category->exists && (int) $value === (int) $category->id) {
+                $fail('Kateqoriya özünə alt-kateqoriya ola bilməz.');
+                return;
+            }
+            $parent = Category::find($value);
+            if ($parent && $parent->parent_id !== null) {
+                $fail('Yalnız əsas kateqoriya üst kateqoriya ola bilər (bir səviyyə).');
+                return;
+            }
+            if ($category->exists && $category->children()->exists()) {
+                $fail('Bu kateqoriyanın alt-kateqoriyaları var, ona görə özü alt-kateqoriya ola bilməz.');
+            }
+        };
+
         $data = $this->validateAz($request, array_merge(
             $this->transRules('name', 'Ad', true),
             $this->transRules('description', 'Təsvir', false, 'string|max:1000'),
             [
+                'parent_id'  => ['nullable', 'integer', 'exists:categories,id', $parentRule],
                 'slug'       => 'nullable|string|max:255|alpha_dash',
                 'image'      => 'nullable|' . self::IMAGE_RULE,
                 'sort_order' => 'nullable|integer|min:0',
                 'is_active'  => 'boolean',
             ]
-        ), ['slug' => 'Slug', 'image' => 'Şəkil', 'sort_order' => 'Sıra']);
+        ), ['parent_id' => 'Üst kateqoriya', 'slug' => 'Slug', 'image' => 'Şəkil', 'sort_order' => 'Sıra']);
 
         $data = $this->cleanTransFields($data, self::TRANS);
 
         $category->fill([
+            'parent_id'   => $data['parent_id'] ?? null,
             'name'        => $data['name'],
             'description' => $data['description'],
             'slug'        => $this->uniqueSlug(Category::class, $data['slug'] ?? null, $data['name']['az'] ?? '', $category->id),

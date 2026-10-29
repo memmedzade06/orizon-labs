@@ -24,6 +24,7 @@
             ['route' => 'admin.slides.index', 'match' => 'admin.slides.*', 'label' => 'Slayder'],
             ['route' => 'admin.photos.index', 'match' => 'admin.photos.*', 'label' => 'Şəkil qalereyası'],
             ['route' => 'admin.videos.index', 'match' => 'admin.videos.*', 'label' => 'Video qalereya'],
+            ['route' => 'admin.certificates.index', 'match' => 'admin.certificates.*', 'label' => 'Sertifikatlar'],
         ],
         'Digər' => [
             ['route' => 'admin.messages.index', 'match' => 'admin.messages.*', 'label' => 'Müraciətlər', 'count' => $unreadMessages],
