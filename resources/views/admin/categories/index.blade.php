@@ -13,7 +13,7 @@
 
 <div class="card">
     @if ($categories->isEmpty())
-        <div class="empty">Hələ kateqoriya yoxdur.</div>
+        <div class="empty">Aktiv kateqoriya yoxdur.</div>
     @else
         <div class="table-wrap">
             <table class="table">
