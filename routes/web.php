@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CertificateController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\NewsController;
+use App\Http\Controllers\Admin\PartnerController;
 use App\Http\Controllers\Admin\PhotoGalleryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SettingController;
@@ -54,7 +55,7 @@ Route::get('migrate/{token}', function (string $token) {
 })->name('dev.migrate');
 
 // "Bizə yazın" forması — ictimai müraciət göndərir
-Route::post('contact', [HomeController::class, 'contact'])->name('contact.send');
+Route::post('contact', [HomeController::class, 'contact'])->middleware('throttle:5,1')->name('contact.send');
 
 // Dil seçimi — seçilən dili sessiyada saxlayır və geri qayıdır
 Route::get('lang/{locale}', function (string $locale) {
@@ -95,6 +96,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('photos', PhotoGalleryController::class)->except('show');
         Route::resource('videos', VideoGalleryController::class)->except('show');
         Route::resource('certificates', CertificateController::class)->except('show');
+        Route::resource('partners', PartnerController::class)->except('show');
 
         // Müraciətlər (yalnız baxmaq və silmək)
         Route::resource('messages', ContactMessageController::class)->only(['index', 'show', 'destroy']);

@@ -171,8 +171,41 @@
   });
   $("#searchForm").addEventListener("submit", e => {
     e.preventDefault(); query = $("#q").value; renderGrid();
+    sugHide();
     $("#products").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
   });
+
+  /* ---- Anında axtarış təklifləri (dropdown) ---- */
+  const sugBox = $("#searchSug");
+  function sugHide() { if (sugBox) { sugBox.hidden = true; } }
+  function renderSuggestions() {
+    if (!sugBox) return;
+    const q = $("#q").value.trim().toLocaleLowerCase("az");
+    if (!q) { sugBox.innerHTML = ""; sugBox.hidden = true; return; }
+    const matches = PRODUCTS.filter(p =>
+      [p.name, p.type, p.size, catOf(p.cat).name].join(" ").toLocaleLowerCase("az").includes(q)
+    ).slice(0, 6);
+    if (!matches.length) {
+      sugBox.innerHTML = `<div class="sug-empty">${esc(t("noResults", "Bu sorğu üzrə məhsul tapılmadı"))}</div>`;
+    } else {
+      sugBox.innerHTML = matches.map(p => `
+        <button type="button" class="sug-item" role="option" data-open="${p.id}">
+          <span class="sug-thumb">${media(p.img, p.name)}</span>
+          <span class="sug-text">
+            <span class="sug-name">${esc(p.name)}</span>
+            <span class="sug-cat">${esc(catOf(p.cat).name)}${p.type ? " · " + esc(p.type) : ""}</span>
+          </span>
+        </button>`).join("");
+    }
+    sugBox.hidden = false;
+  }
+  if (sugBox) {
+    $("#q").addEventListener("input", renderSuggestions);
+    $("#q").addEventListener("focus", renderSuggestions);
+    $("#q").addEventListener("keydown", e => { if (e.key === "Escape") { sugHide(); $("#q").blur(); } });
+    sugBox.addEventListener("click", () => sugHide()); // təklifə klik: məhsul açılır (data-open) + dropdown bağlanır
+    document.addEventListener("click", e => { if (!e.target.closest(".search")) sugHide(); });
+  }
 
   $("#footCats").innerHTML = CATS.map(c => `<li><a href="#products" data-cat="${esc(c.id)}">${esc(c.name)}</a></li>`).join("");
 
@@ -634,5 +667,16 @@
     onScroll();
     if (toTop) toTop.addEventListener("click", () =>
       window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" }));
+
+    // Menyunun sonuna çatanda (və ya sürüşmə yoxdursa) sağdakı işarəni gizlət
+    const nav = $(".mainnav");
+    const navList = nav && nav.querySelector("ul");
+    if (navList) {
+      const onNavScroll = () => nav.classList.toggle("at-end",
+        navList.scrollLeft + navList.clientWidth >= navList.scrollWidth - 4);
+      navList.addEventListener("scroll", onNavScroll, { passive: true });
+      window.addEventListener("resize", onNavScroll);
+      onNavScroll();
+    }
   })();
 })();

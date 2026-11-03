@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Certificate;
 use App\Models\ContactMessage;
 use App\Models\News;
+use App\Models\Partner;
 use App\Models\PhotoGallery;
 use App\Models\Product;
 use App\Models\Setting;
@@ -147,6 +148,13 @@ class HomeController extends Controller
                 'title' => $c->tr('title'),
             ])->values(),
 
+            // Tərəfdaş brendlər — "Aptek, klinika və distribyutorlar üçün" bölməsinin yanında
+            'partners' => Partner::active()->ordered()->get()->map(fn (Partner $p) => [
+                'name' => $p->name,
+                'logo' => $this->url($p->logo),
+                'url'  => $p->url,
+            ])->values(),
+
             'whatsapp' => $site['whatsapp'],
 
             // Cari dil və JS tərəfdə göstərilən mətnlərin tərcümələri
@@ -196,6 +204,14 @@ class HomeController extends Controller
     /** "Bizə yazın" formasından gələn müraciəti saxlayır */
     public function contact(Request $request): RedirectResponse
     {
+        // Honeypot: "website" yalnız botlar tərəfindən doldurulur. Dolubsa, saxlamadan
+        // "uğurlu" cavab qaytarırıq ki, bot spam-ın tutulduğunu bilməsin.
+        if ($request->filled('website')) {
+            return redirect()->back()
+                ->with('contact_success', __('Mesajınız göndərildi. Tezliklə sizinlə əlaqə saxlayacağıq.'))
+                ->withFragment('write');
+        }
+
         $data = $request->validate([
             'name'    => 'required|string|max:255',
             'surname' => 'required|string|max:255',
