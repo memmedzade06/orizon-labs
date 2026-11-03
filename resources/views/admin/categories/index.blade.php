@@ -8,7 +8,7 @@
         <h1>Kateqoriyalar</h1>
         <p class="sub">{{ $total }} kateqoriya</p>
     </div>
-    <a href="{{ route('admin.categories.create') }}" class="btn">+ Yeni kateqoriya</a>
+    <a href="{{ route('admin.categories.create') }}" class="btn">+ Yeni kateqoriya yarat</a>
 </div>
 
 <div class="card">
