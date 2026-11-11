@@ -387,7 +387,7 @@
         <div class="video-frame" id="vf${i}">
           ${v.thumb ? `<img src="${esc(v.thumb)}" alt="" loading="lazy">` : ""}
           <button type="button" class="video-play" data-video="${i}" aria-label="${esc(t("playVideo", "Videonu oynat"))}: ${esc(v.title)}">
-            <span><svg width="22" height="22" viewBox="0 0 24 24" fill="#0E2A47" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+            <span><svg width="22" height="22" viewBox="0 0 24 24" fill="#153F70" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
           </button>
         </div>
         <h3>${esc(v.title)}</h3>

@@ -262,13 +262,50 @@ class HomeController extends Controller
             'founded'    => $get('about.founded_year'),
             'countries'  => $get('about.countries_count'),
             'partners'   => $get('about.partners_count'),
-            'exportList' => array_values(array_filter(array_map('trim', explode(',', (string) $get('about.export_countries'))))),
+            'exportList' => $exportList = array_values(array_filter(array_map('trim', explode(',', (string) $get('about.export_countries'))))),
+            'exportFlags'=> $this->countryFlags($exportList),
             'social'     => array_filter([
                 'Instagram' => Setting::get('social.instagram'),
                 'Facebook'  => Setting::get('social.facebook'),
                 'LinkedIn'  => Setting::get('social.linkedin'),
             ]),
         ];
+    }
+
+    /** Ölkə adlarını (AZ/EN/RU) bayraq üçün ISO koduna çevirir; tanınmayanlar atlanır */
+    private function countryFlags(array $names): array
+    {
+        $codes = [
+            'tr' => ['türkiyə', 'turkey', 'türkiye', 'турция'],
+            'ge' => ['gürcüstan', 'georgia', 'грузия'],
+            'pl' => ['polşa', 'poland', 'польша'],
+            'lv' => ['latviya', 'latvia', 'латвия'],
+            'cz' => ['çexiya', 'czechia', 'czech republic', 'чехия'],
+            'az' => ['azərbaycan', 'azerbaijan', 'азербайджан'],
+            'ru' => ['rusiya', 'russia', 'россия'],
+            'kz' => ['qazaxıstan', 'kazakhstan', 'казахстан'],
+            'uz' => ['özbəkistan', 'uzbekistan', 'узбекистан'],
+            'ua' => ['ukrayna', 'ukraine', 'украина'],
+            'de' => ['almaniya', 'germany', 'германия'],
+            'lt' => ['litva', 'lithuania', 'литва'],
+            'ee' => ['estoniya', 'estonia', 'эстония'],
+            'ir' => ['iran', 'иран'],
+            'iq' => ['iraq', 'ирак'],
+            'ae' => ['bəə', 'uae', 'birləşmiş ərəb əmirlikləri', 'united arab emirates', 'оаэ'],
+        ];
+
+        $flags = [];
+        foreach ($names as $name) {
+            $needle = mb_strtolower($name);
+            foreach ($codes as $code => $variants) {
+                if (in_array($needle, $variants, true)) {
+                    $flags[] = ['code' => $code, 'name' => $name];
+                    break;
+                }
+            }
+        }
+
+        return $flags;
     }
 
     private function url(?string $path): ?string
