@@ -112,6 +112,10 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    // Saytdakı formadan gələn müraciətlərin göndərildiyi ünvan.
+    // Boşdursa, admin ayarlarındakı əlaqə e-poçtu (contact.email) istifadə olunur.
+    'notify_to' => env('MAIL_NOTIFY_TO'),
+
     /*
     |--------------------------------------------------------------------------
     | Markdown Mail Settings

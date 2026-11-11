@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ContactMessageReceived;
 use App\Models\Category;
 use App\Models\Certificate;
 use App\Models\ContactMessage;
@@ -15,6 +16,8 @@ use App\Models\Slide;
 use App\Models\VideoGallery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -226,7 +229,7 @@ class HomeController extends Controller
             'message' => __('Mesaj'),
         ]);
 
-        ContactMessage::create([
+        $contactMessage = ContactMessage::create([
             'type'       => 'contact',
             'name'       => trim($data['name'] . ' ' . $data['surname']),
             'email'      => $data['email'] ?? null,
@@ -236,10 +239,32 @@ class HomeController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
+        $this->notifyByEmail($contactMessage);
+
         return redirect()
             ->back()
             ->with('contact_success', __('Mesajınız göndərildi. Tezliklə sizinlə əlaqə saxlayacağıq.'))
             ->withFragment('write');
+    }
+
+    /**
+     * Müraciəti şirkətin poçtuna göndərir. Ünvan: .env-də MAIL_NOTIFY_TO, yoxdursa
+     * admin ayarlarındakı əlaqə e-poçtu. Poçt işləməsə belə müraciət bazada qalır
+     * və ziyarətçi xəta görmür — xəta yalnız loga yazılır.
+     */
+    private function notifyByEmail(ContactMessage $contactMessage): void
+    {
+        $to = config('mail.notify_to')
+            ?: (Setting::get('contact.email') ?: self::DEFAULTS['contact.email']);
+
+        try {
+            Mail::to($to)->send(new ContactMessageReceived($contactMessage));
+        } catch (\Throwable $e) {
+            Log::error('Müraciət e-poçtla göndərilmədi', [
+                'contact_message_id' => $contactMessage->id,
+                'error'              => $e->getMessage(),
+            ]);
+        }
     }
 
     /** Header, footer və "Haqqımızda" üçün ayarlar */
