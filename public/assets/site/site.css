@@ -22,7 +22,7 @@
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-section[id]{scroll-margin-top:85px}
+section[id]{scroll-margin-top:var(--head-h,111px)}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
 body.lock{overflow:hidden}
 img,svg{display:block;max-width:100%}
@@ -41,8 +41,20 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .util-wa{display:inline-flex;align-items:center;color:#25D366}
 .util-wa:hover{color:#25D366;opacity:.85}
 .util-left{align-items:center}
-.util-flags{display:flex;align-items:center;gap:10px;list-style:none;margin:0;padding:0}
-.util-flags li{display:flex}
+.util-left:has(.util-flags-view){flex:1;min-width:0;flex-wrap:nowrap;gap:12px}
+.util-flags-label{flex:none}
+/* Bayraqlar: sığmayanda sonsuz sürüşən zolağa çevrilir (site.js → .is-sliding) */
+.util-flags-view{flex:1;min-width:0;overflow:hidden;padding:4px 0}
+.util-flags{display:flex;align-items:center;width:max-content;list-style:none;margin:0;padding:0}
+.util-flags li{display:flex;flex:none;margin-right:10px}
+.util-flags-view.is-sliding{max-width:170px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent);mask-image:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent)}
+.util-flags-view.is-sliding .util-flags{animation:flagsSlide var(--flags-dur,20s) linear infinite}
+.util-flags-view.is-sliding:hover .util-flags{animation-play-state:paused}
+@keyframes flagsSlide{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){
+  .util-flags-view.is-sliding{overflow-x:auto;-webkit-mask-image:none;mask-image:none}
+  .util-flags-view.is-sliding .util-flags{animation:none}
+}
 .util-flags img{display:block;width:24px;height:18px;object-fit:cover;border-radius:3px;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
 .lang{display:flex;gap:2px}
 .lang a{padding:4px 9px;border-radius:4px;font-weight:700;font-size:12px;color:#C9D6E3;text-decoration:none}
@@ -414,6 +426,8 @@ footer a:hover{color:#fff}
   .search{grid-column:1/-1;order:3}
   .head-cta .btn-line{display:none}
   .head-cta{justify-self:end}
+  /* "Əlaqə" və "Axtar" eyni endə — kənarları üst-üstə düşür */
+  .head-cta .btn,.search button{min-width:100px;padding-left:14px;padding-right:14px;justify-content:center;text-align:center}
   .slides{height:520px}
   .slide::before{background:linear-gradient(0deg, rgba(10,26,40,.95) 0%, rgba(12,34,54,.75) 45%, rgba(21,63,112,.1) 100%)}
   .slide-art{width:100%;bottom:auto;height:50%;top:0}
@@ -535,3 +549,39 @@ footer a:hover{color:#fff}
 .arrow:hover{background:rgba(21,63,112,.85);border-color:#fff}
 .dot{box-shadow:0 1px 3px rgba(0,0,0,.35)}
 .counter{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+
+/* =========================================================
+   Slayder: mətn solda (göy fonda), şəkil sağda — əyri kənarla
+   ========================================================= */
+.slider .slide-bg{left:46%;right:0;width:auto;transform:none;z-index:1;
+  -webkit-mask-image:none;mask-image:none;clip-path:ellipse(100% 125% at 100% 50%)}
+/* Şəklin kənarında iki zolaq: xarici qızılı, daxili açıq göy */
+.slider .slide::before,.slider .slide::after{content:"";position:absolute;top:0;bottom:0;right:0;z-index:0;pointer-events:none;
+  clip-path:ellipse(100% 125% at 100% 50%)}
+.slider .slide::before{left:calc(46% - 26px);background:var(--sun)}
+.slider .slide::after{left:calc(46% - 12px);background:var(--navy-3)}
+.slider .slide .wrap{z-index:2}
+.slider .slide h1,.slider .slide h2{max-width:min(15ch,40vw)}
+.slider .slide p{max-width:min(42ch,40vw)}
+@media (max-width:860px){
+  .slider .slides{height:560px}
+  .slider .slide-bg{left:0;top:0;bottom:auto;height:40%;clip-path:ellipse(130% 100% at 50% 0)}
+  .slider .slide::before,.slider .slide::after{left:0;bottom:auto;clip-path:ellipse(130% 100% at 50% 0)}
+  .slider .slide::before{height:calc(40% + 14px)}
+  .slider .slide::after{height:calc(40% + 7px)}
+  .slider .slide h1,.slider .slide h2,.slider .slide p{max-width:none}
+}
+
+/* Keçid kölgəsi: zolaqdan göy fona düşən kölgə + şəklin kənarında daxili kölgə */
+.slider .slide{z-index:0}
+.slider .slide-shade,.slider .slide-shade-in{position:absolute;top:0;bottom:0;right:0;pointer-events:none}
+.slider .slide-shade{left:calc(46% - 160px);z-index:-1;
+  background:radial-gradient(ellipse 100% 125% at 100% 50%, rgba(5,14,24,.75) calc(100% - 140px), rgba(5,14,24,0) 100%)}
+.slider .slide-shade-in{left:46%;z-index:1;clip-path:ellipse(100% 125% at 100% 50%);
+  background:radial-gradient(ellipse 100% 125% at 100% 50%, rgba(5,14,24,0) calc(100% - 120px), rgba(5,14,24,.65) 100%)}
+@media (max-width:860px){
+  .slider .slide-shade{left:0;bottom:auto;height:calc(40% + 90px);
+    background:radial-gradient(ellipse 130% 100% at 50% 0, rgba(5,14,24,.75) calc(100% - 80px), rgba(5,14,24,0) 100%)}
+  .slider .slide-shade-in{left:0;bottom:auto;height:40%;clip-path:ellipse(130% 100% at 50% 0);
+    background:radial-gradient(ellipse 130% 100% at 50% 0, rgba(5,14,24,0) calc(100% - 75px), rgba(5,14,24,.65) 100%)}
+}

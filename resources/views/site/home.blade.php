@@ -18,13 +18,15 @@
     <div class="util-left">
       @if (count($site['exportFlags']))
         <span class="util-flags-label">{{ __('Tərəfdaş ölkələr') }}:</span>
-        <ul class="util-flags" aria-label="{{ __('Tərəfdaş ölkələr') }}">
-          @foreach ($site['exportFlags'] as $flag)
-            <li title="{{ $flag['name'] }}">
-              <img src="https://flagcdn.com/{{ $flag['code'] }}.svg" alt="{{ $flag['name'] }}" width="24" height="18" loading="lazy">
-            </li>
-          @endforeach
-        </ul>
+        <div class="util-flags-view" id="utilFlags">
+          <ul class="util-flags" aria-label="{{ __('Tərəfdaş ölkələr') }}">
+            @foreach ($site['exportFlags'] as $flag)
+              <li title="{{ $flag['name'] }}">
+                <img src="https://flagcdn.com/{{ $flag['code'] }}.svg" alt="{{ $flag['name'] }}" width="24" height="18">
+              </li>
+            @endforeach
+          </ul>
+        </div>
       @endif
     </div>
     <div class="lang" role="group" aria-label="{{ __('Dil') }}">

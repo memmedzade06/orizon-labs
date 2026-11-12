@@ -317,11 +317,53 @@ class HomeController extends Controller
             'ir' => ['iran', 'иран'],
             'iq' => ['iraq', 'ирак'],
             'ae' => ['bəə', 'uae', 'birləşmiş ərəb əmirlikləri', 'united arab emirates', 'оаэ'],
+            'by' => ['belarus', 'belarusiya', 'belorusiya', 'беларусь', 'белоруссия'],
+            'kg' => ['qırğızıstan', 'kyrgyzstan', 'киргизия', 'кыргызстан'],
+            'tj' => ['tacikistan', 'tajikistan', 'таджикистан'],
+            'tm' => ['türkmənistan', 'turkmenistan', 'туркменистан'],
+            'am' => ['ermənistan', 'armenia', 'армения'],
+            'md' => ['moldova', 'молдова', 'молдавия'],
+            'mn' => ['monqolustan', 'mongolia', 'монголия'],
+            'af' => ['əfqanıstan', 'afghanistan', 'афганистан'],
+            'pk' => ['pakistan', 'пакистан'],
+            'in' => ['hindistan', 'india', 'индия'],
+            'cn' => ['çin', 'china', 'китай'],
+            'sa' => ['səudiyyə ərəbistanı', 'saudi arabia', 'саудовская аравия'],
+            'qa' => ['qətər', 'qatar', 'катар'],
+            'kw' => ['küveyt', 'kuwait', 'кувейт'],
+            'om' => ['oman', 'оман'],
+            'bh' => ['bəhreyn', 'bahrain', 'бахрейн'],
+            'jo' => ['iordaniya', 'jordan', 'иордания'],
+            'lb' => ['livan', 'lebanon', 'ливан'],
+            'sy' => ['suriya', 'syria', 'сирия'],
+            'il' => ['israil', 'israel', 'израиль'],
+            'eg' => ['misir', 'egypt', 'египет'],
+            'gb' => ['böyük britaniya', 'birləşmiş krallıq', 'united kingdom', 'uk', 'великобритания'],
+            'fr' => ['fransa', 'france', 'франция'],
+            'it' => ['italiya', 'italy', 'италия'],
+            'es' => ['ispaniya', 'spain', 'испания'],
+            'nl' => ['niderland', 'hollandiya', 'netherlands', 'нидерланды'],
+            'be' => ['belçika', 'belgium', 'бельгия'],
+            'at' => ['avstriya', 'austria', 'австрия'],
+            'ch' => ['isveçrə', 'switzerland', 'швейцария'],
+            'se' => ['isveç', 'sweden', 'швеция'],
+            'no' => ['norveç', 'norway', 'норвегия'],
+            'fi' => ['finlandiya', 'finland', 'финляндия'],
+            'dk' => ['danimarka', 'denmark', 'дания'],
+            'sk' => ['slovakiya', 'slovakia', 'словакия'],
+            'hu' => ['macarıstan', 'hungary', 'венгрия'],
+            'ro' => ['rumıniya', 'romania', 'румыния'],
+            'bg' => ['bolqarıstan', 'bulgaria', 'болгария'],
+            'gr' => ['yunanıstan', 'greece', 'греция'],
+            'rs' => ['serbiya', 'serbia', 'сербия'],
+            'us' => ['abş', 'amerika', 'usa', 'united states', 'сша'],
+            'ca' => ['kanada', 'canada', 'канада'],
         ];
 
         $flags = [];
         foreach ($names as $name) {
-            $needle = mb_strtolower($name);
+            // "İ" mb_strtolower ilə "i̇" (i + nöqtə) olur — əvvəlcə adi "i"yə çeviririk
+            $needle = mb_strtolower(str_replace('İ', 'i', $name));
             foreach ($codes as $code => $variants) {
                 if (in_array($needle, $variants, true)) {
                     $flags[] = ['code' => $code, 'name' => $name];

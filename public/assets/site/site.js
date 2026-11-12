@@ -38,7 +38,9 @@
     $("#slides").innerHTML = SLIDES.map((s, i) => `
       <div class="slide${i === 0 ? " is-active" : ""}" role="group" aria-roledescription="slide" aria-label="${i + 1} / ${SLIDES.length}">
         ${s.img
-          ? `<div class="slide-bg" style="background-image:url('${esc(s.img)}')"></div>`
+          ? `<span class="slide-shade" aria-hidden="true"></span>
+             <div class="slide-bg" style="background-image:url('${esc(s.img)}')"></div>
+             <span class="slide-shade-in" aria-hidden="true"></span>`
           : `<div class="slide-noimg" aria-hidden="true"></div>`}
         <div class="wrap">
           ${s.eyebrow ? `<div class="slide-step">${esc(s.eyebrow)}</div>` : ""}
@@ -677,6 +679,46 @@
       navList.addEventListener("scroll", onNavScroll, { passive: true });
       window.addEventListener("resize", onNavScroll);
       onNavScroll();
+    }
+
+    // Menyu keçidləri: bölmə yapışqan başlığın altında qalmasın — boşluq başlığın real hündürlüyü qədər
+    const stickyHead = $(".header");
+    if (stickyHead) {
+      const setHeadH = () => document.documentElement.style.setProperty("--head-h", stickyHead.offsetHeight + "px");
+      window.addEventListener("resize", setHeadH);
+      if ("ResizeObserver" in window) new ResizeObserver(setHeadH).observe(stickyHead);
+      setHeadH();
+    }
+
+    // Tərəfdaş ölkə bayraqları: həmişə sonsuz sürüşən zolaq
+    const flagsView = $("#utilFlags");
+    const flagsList = flagsView && flagsView.querySelector(".util-flags");
+    if (flagsList) {
+      const items = Array.from(flagsList.children);
+      const STEP = 34; // bayraq eni (24px) + aralıq (10px)
+      const clone = li => {
+        const c = li.cloneNode(true);
+        c.setAttribute("aria-hidden", "true"); // surətlər ekran oxuyucularından gizli
+        c.querySelector("img").alt = "";
+        return c;
+      };
+      const buildFlags = () => {
+        flagsView.classList.add("is-sliding");
+        flagsList.replaceChildren(...items);
+        // Bir "dəst" zolağı tam doldurmalıdır, yoxsa az bayraqda boşluq görünür
+        const reps = Math.max(1, Math.ceil(flagsView.clientWidth / (items.length * STEP)));
+        const set = [];
+        for (let r = 1; r < reps; r++) items.forEach(li => set.push(clone(li)));
+        const half = items.length + set.length;
+        flagsList.append(...set, ...items.map(clone), ...set.map(c => c.cloneNode(true)));
+        flagsView.style.setProperty("--flags-dur", (half * 2.2) + "s");
+      };
+      let lastW = 0;
+      window.addEventListener("resize", () => {
+        if (flagsView.clientWidth !== lastW) { lastW = flagsView.clientWidth; buildFlags(); }
+      });
+      lastW = flagsView.clientWidth;
+      buildFlags();
     }
   })();
 })();
