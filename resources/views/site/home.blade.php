@@ -5,7 +5,44 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ __('Orizon Labs — dərman vasitələri, qida əlavələri və kosmetika istehsalçısı') }}</title>
 <meta name="description" content="{{ __('Orizon Labs Pharmaceuticals — Bakıda dərman vasitələri, qida əlavələri və kosmetika istehsalçısı.') }}">
-<link rel="icon" type="image/png" href="{{ asset('assets/site/logo.png') }}">
+<link rel="icon" href="{{ asset('favicon.ico') }}" sizes="16x16 32x32 48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ asset('assets/site/icons/icon-192.png') }}">
+<link rel="apple-touch-icon" href="{{ asset('assets/site/icons/apple-touch-icon.png') }}">
+{{-- SEO: Google və sosial şəbəkələr üçün --}}
+<link rel="canonical" href="{{ url('/') }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Orizon Labs">
+<meta property="og:url" content="{{ url('/') }}">
+<meta property="og:title" content="{{ __('Orizon Labs — dərman vasitələri, qida əlavələri və kosmetika istehsalçısı') }}">
+<meta property="og:description" content="{{ __('Orizon Labs Pharmaceuticals — Bakıda dərman vasitələri, qida əlavələri və kosmetika istehsalçısı.') }}">
+<meta property="og:image" content="{{ asset('assets/site/logo.png') }}">
+<meta property="og:locale" content="{{ ['az' => 'az_AZ', 'en' => 'en_US', 'ru' => 'ru_RU'][app()->getLocale()] ?? 'az_AZ' }}">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{!! json_encode(array_filter([
+    '@context'  => 'https://schema.org',
+    '@type'     => 'Organization',
+    'name'      => 'Orizon Labs Pharmaceuticals',
+    'alternateName' => 'Orizon Labs',
+    'url'       => url('/'),
+    'logo'      => asset('assets/site/logo.png'),
+    'foundingDate' => $site['founded'],
+    'email'     => $site['email'],
+    'telephone' => $site['phone'],
+    'address'   => $site['address'] ? ['@type' => 'PostalAddress', 'streetAddress' => $site['address'], 'addressCountry' => 'AZ'] : null,
+    'sameAs'    => array_values(array_unique($site['social'])) ?: null,
+]), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+{{-- Google axtarışında göstərilən sayt adı --}}
+<script type="application/ld+json">
+{!! json_encode([
+    '@context'      => 'https://schema.org',
+    '@type'         => 'WebSite',
+    'name'          => 'Orizon Labs',
+    'alternateName' => ['Orizon Labs Pharmaceuticals', 'Orizon Labs MMC'],
+    'url'           => url('/'),
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">

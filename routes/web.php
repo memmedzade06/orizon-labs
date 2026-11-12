@@ -30,6 +30,28 @@ use Illuminate\Support\Facades\Route;
 // Ana səhifə — məlumatlar admin paneldən
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+// Axtarış sistemləri üçün: robots.txt və sitemap.xml (ünvanlar cari domendən qurulur)
+Route::get('robots.txt', fn () => response(
+    "User-agent: *\nDisallow: /admin\nDisallow: /migrate\n\nSitemap: " . url('sitemap.xml') . "\n"
+)->header('Content-Type', 'text/plain; charset=UTF-8'));
+
+Route::get('sitemap.xml', function () {
+    $lastmod = collect([
+        \App\Models\Product::max('updated_at'),
+        \App\Models\News::max('updated_at'),
+        \App\Models\Setting::max('updated_at'),
+    ])->filter()->max();
+
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+        . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n"
+        . '  <url><loc>' . e(url('/')) . '</loc>'
+        . ($lastmod ? '<lastmod>' . \Illuminate\Support\Carbon::parse($lastmod)->toAtomString() . '</lastmod>' : '')
+        . '<changefreq>weekly</changefreq><priority>1.0</priority></url>' . "\n"
+        . '</urlset>';
+
+    return response($xml)->header('Content-Type', 'application/xml; charset=UTF-8');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Migrasiya linki — gizli token ilə (lokal VƏ hosting üçün işləyir)
